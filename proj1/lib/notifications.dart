@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'payments.dart';
 
@@ -25,7 +26,7 @@ class _NotificationPageState extends State<NotificationPage> {
         _notifications.clear();
 
         for (var info in list) {
-          _notifications.add(new BillNotificationCard(info));
+          _notifications.add(new BillNotificationCard(info, () => _refresh()));
         }
       },
     );
@@ -43,9 +44,10 @@ class _NotificationPageState extends State<NotificationPage> {
 }
 
 class BillNotificationCard extends StatelessWidget {
-  BillNotificationCard(this._info);
+  BillNotificationCard(this._info, this.refreshCallback);
 
   final PaymentInfo _info;
+  final VoidCallback refreshCallback;
 
   @override
   Widget build(BuildContext context) {
@@ -135,27 +137,27 @@ class BillNotificationCard extends StatelessWidget {
     );
   }
 
-  void _initPayment(BuildContext context, String network) {
+  Future _initPayment(BuildContext context, String network) async {
     try {
-      new PaymentTransaction(_info).pay(network).then(
-        (value) {
-          showDialog(
-            context: context,
-            child: new AlertDialog(
-              content: const Text('Congratulations! Your bill has been paid.'),
-              actions: [
-                new FlatButton(
-                  child: new Text('Ok'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
+      await new PaymentTransaction(_info).pay(network);
+
+      showDialog(
+        context: context,
+        child: new AlertDialog(
+          content: const Text('Congratulations! Your bill has been paid.'),
+          actions: [
+            new FlatButton(
+              child: new Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                refreshCallback();
+              },
             ),
-          );
-        },
+          ],
+        ),
       );
     } catch (ex) {
+      print(ex.toString());
       showDialog(
         context: context,
         child: new AlertDialog(
