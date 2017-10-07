@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'payments.dart';
 
 class NotificationPage extends StatefulWidget {
   @override
@@ -12,11 +14,21 @@ class _NotificationPageState extends State<NotificationPage> {
   initState() {
     super.initState();
 
-    _notifications.add(new BillNotificationCard());
-    _notifications.add(new BillNotificationCard());
-    _notifications.add(new BillNotificationCard());
-    _notifications.add(new BillNotificationCard());
-    _notifications.add(new BillNotificationCard());
+    _refresh();
+  }
+
+  _refresh() async {
+    var list = await PaymentInfo.get();
+    print('***list count: ' + list.length.toString());
+    setState(
+      () {
+        _notifications.clear();
+
+        for (var info in list) {
+          _notifications.add(new BillNotificationCard(info));
+        }
+      },
+    );
   }
 
   @override
@@ -31,21 +43,25 @@ class _NotificationPageState extends State<NotificationPage> {
 }
 
 class BillNotificationCard extends StatelessWidget {
+  BillNotificationCard(this._info);
+
+  final PaymentInfo _info;
+
   @override
   Widget build(BuildContext context) {
     return new Card(
       child: new Column(
         children: <Widget>[
           new ListTile(
-            title: const Text(
-              'Nagori Milk Shop',
+            title: new Text(
+              _info.billerName,
               style: const TextStyle(
                 fontSize: 20.0,
               ),
             ),
-            subtitle: const Text('1 November - 4 days remaining'),
-            trailing: const Text(
-              'Rs. 3,000',
+            subtitle: new Text(_info.formattedDate),
+            trailing: new Text(
+              _info.formattedAmount,
               style: const TextStyle(
                 color: Colors.red,
                 fontSize: 20.0,
@@ -65,41 +81,7 @@ class BillNotificationCard extends StatelessWidget {
                 new RaisedButton(
                   color: Theme.of(context).accentColor,
                   onPressed: () {
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (context) {
-                          return new Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16.0,
-                            ),
-                            child: new Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                new ListTile(
-                                  onTap: () {
-                                    new PaymentTransaction(
-                                      paymentInfo
-                                    ).Pay();
-                                  },
-                                  leading: new CircleAvatar(
-                                      backgroundColor: Colors.grey,
-                                      backgroundImage: new NetworkImage(
-                                          'http://www.jazzcash.com.pk/assets/uploads/2016/05/jazzcash-logo-200x200.png')),
-                                  title: const Text('Pay with JazzCash'),
-                                ),
-                                new ListTile(
-                                  onTap: () {
-
-                                  },
-                                  leading: new CircleAvatar(
-                                      backgroundImage: new NetworkImage(
-                                          'https://lh3.googleusercontent.com/b5Sk189FfE4X43i-28gLLL1V08TQOQWDwHl-yQzHeMu1DSDFEn3RFqFQ9FBUyRM9hfc=w300')),
-                                  title: const Text('Pay with EasyPaisa'),
-                                ),
-                              ],
-                            ),
-                          );
-                        });
+                    _showPaymentSelection(context);
                   },
                   child: const Text(
                     'Pay now',
@@ -114,5 +96,80 @@ class BillNotificationCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  _showPaymentSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return new Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 16.0,
+          ),
+          child: new Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              new ListTile(
+                onTap: () {
+                  _initPayment(context, 'jc');
+                },
+                leading: new CircleAvatar(
+                    backgroundColor: Colors.grey,
+                    backgroundImage: new NetworkImage(
+                        'http://www.jazzcash.com.pk/assets/uploads/2016/05/jazzcash-logo-200x200.png')),
+                title: const Text('Pay with JazzCash'),
+              ),
+              new ListTile(
+                onTap: () {
+                  _initPayment(context, 'ep');
+                },
+                leading: new CircleAvatar(
+                    backgroundImage: new NetworkImage(
+                        'https://lh3.googleusercontent.com/b5Sk189FfE4X43i-28gLLL1V08TQOQWDwHl-yQzHeMu1DSDFEn3RFqFQ9FBUyRM9hfc=w300')),
+                title: const Text('Pay with EasyPaisa'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _initPayment(BuildContext context, String network) {
+    try {
+      new PaymentTransaction(_info).pay(network).then(
+        (value) {
+          showDialog(
+            context: context,
+            child: new AlertDialog(
+              content: const Text('Congratulations! Your bill has been paid.'),
+              actions: [
+                new FlatButton(
+                  child: new Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (ex) {
+      showDialog(
+        context: context,
+        child: new AlertDialog(
+          content: const Text('Unable to pay the bill right now.'),
+          actions: [
+            new FlatButton(
+              child: new Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      );
+    }
   }
 }
