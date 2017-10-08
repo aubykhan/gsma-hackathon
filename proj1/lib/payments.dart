@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-String baseUri = 'http://10.0.0.84/dastak/index.php/api/';
+String baseUri = 'http://10.0.0.101/dastak/index.php/api/';
 
 class PaymentInfo {
   PaymentInfo(this.id, this.billerName, this.amount, this.dueDate);

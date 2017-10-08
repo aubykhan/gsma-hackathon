@@ -10,6 +10,7 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   List<BillNotificationCard> _notifications = new List();
+  bool _isLoading = false;
 
   @override
   initState() {
@@ -19,21 +20,39 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   _refresh() async {
-    var list = await PaymentInfo.get();
-    print('***list count: ' + list.length.toString());
-    setState(
-      () {
-        _notifications.clear();
+    setState(() => _isLoading = true);
+    try {
+      var list = await PaymentInfo.get();
+      print('***list count: ' + list.length.toString());
+      setState(
+        () {
+          _notifications.clear();
 
-        for (var info in list) {
-          _notifications.add(new BillNotificationCard(info, () => _refresh()));
-        }
-      },
-    );
+          for (var info in list) {
+            _notifications
+                .add(new BillNotificationCard(info, () => _refresh()));
+          }
+        },
+      );
+    } catch (ex) {
+      print(ex);
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    return _isLoading ? _buildLoader() : _buildList();
+  }
+
+  Widget _buildLoader() {
+    return new Center(
+      child: new CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildList() {
     return new ListView.builder(
       itemCount: _notifications.length,
       itemBuilder: (BuildContext __, int index) {
@@ -43,60 +62,82 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 }
 
-class BillNotificationCard extends StatelessWidget {
+class BillNotificationCard extends StatefulWidget {
   BillNotificationCard(this._info, this.refreshCallback);
 
   final PaymentInfo _info;
   final VoidCallback refreshCallback;
 
   @override
+  _BillNotificationCardState createState() =>
+      new _BillNotificationCardState(_info, refreshCallback);
+}
+
+class _BillNotificationCardState extends State<BillNotificationCard> {
+  _BillNotificationCardState(this._info, this.refreshCallback);
+
+  final PaymentInfo _info;
+  final VoidCallback refreshCallback;
+  bool _isBusy = false;
+
+  @override
   Widget build(BuildContext context) {
-    return new Card(
-      child: new Column(
-        children: <Widget>[
-          new ListTile(
-            title: new Text(
-              _info.billerName,
-              style: const TextStyle(
-                fontSize: 20.0,
-              ),
-            ),
-            subtitle: new Text(_info.formattedDate),
-            trailing: new Text(
-              _info.formattedAmount,
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-              ),
+    return new Card(child: _buildCardContent(context));
+  }
+
+  Widget _buildLoader() {
+    return new Center(
+      child: new CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildCardContent(BuildContext context) {
+    return new Column(
+      children: <Widget>[
+        new ListTile(
+          title: new Text(
+            _info.billerName,
+            style: const TextStyle(
+              fontSize: 20.0,
             ),
           ),
-          new Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: new Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                new RaisedButton(
-                  onPressed: () {},
-                  child: const Text('Remind me'),
-                ),
-                new RaisedButton(
-                  color: Theme.of(context).accentColor,
-                  onPressed: () {
-                    _showPaymentSelection(context);
-                  },
-                  child: const Text(
-                    'Pay now',
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
+          subtitle: new Text(_info.formattedDate),
+          trailing: new Text(
+            _info.formattedAmount,
+            style: const TextStyle(
+              color: Colors.red,
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
             ),
-          )
-        ],
-      ),
+          ),
+        ),
+        new Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: new Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              new RaisedButton(
+                onPressed: () {},
+                child: const Text('Remind me'),
+              ),
+              _isBusy
+                  ? _buildLoader()
+                  : new RaisedButton(
+                      color: Theme.of(context).accentColor,
+                      onPressed: () {
+                        _showPaymentSelection(context);
+                      },
+                      child: const Text(
+                        'Pay now',
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+            ],
+          ),
+        )
+      ],
     );
   }
 
@@ -114,6 +155,7 @@ class BillNotificationCard extends StatelessWidget {
               new ListTile(
                 onTap: () {
                   _initPayment(context, 'jc');
+                  Navigator.of(context).pop();
                 },
                 leading: new CircleAvatar(
                     backgroundColor: Colors.grey,
@@ -124,6 +166,7 @@ class BillNotificationCard extends StatelessWidget {
               new ListTile(
                 onTap: () {
                   _initPayment(context, 'ep');
+                  Navigator.of(context).pop();                  
                 },
                 leading: new CircleAvatar(
                     backgroundImage: new NetworkImage(
@@ -139,6 +182,7 @@ class BillNotificationCard extends StatelessWidget {
 
   Future _initPayment(BuildContext context, String network) async {
     try {
+      setState(() => _isBusy = true);
       await new PaymentTransaction(_info).pay(network);
 
       showDialog(
@@ -172,6 +216,8 @@ class BillNotificationCard extends StatelessWidget {
           ],
         ),
       );
+    } finally {
+      setState(() => _isBusy = false);
     }
   }
 }
