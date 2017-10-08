@@ -61,43 +61,59 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: new ListView(
         children: <Widget>[
-          new Card(
-            child: new Column(
-              children: <Widget>[
-                new ListTile(
-                  leading: new CircleAvatar(
-                    backgroundImage: new NetworkImage(
-                        'https://organicthemes.com/demo/profile/files/2012/12/profile_img.png'),
-                  ),
-                  title: const Text('Mohsin'),
-                  subtitle: const Text(
-                    'Rating 4/5',
-                    style: const TextStyle(
-                      color: Colors.green,
-                    ),
-                  ),
-                ),
-                new ButtonBar(
-                  children: <Widget>[
-                    new RaisedButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'Reject',
-                      ),
-                    ),
-                    new RaisedButton(
-                      onPressed: () {},
-                      color: Theme.of(context).accentColor,
-                      child: const Text(
-                        'Accept',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                )
-              ],
+          _buildUserCard(
+            context,
+            'https://organicthemes.com/demo/profile/files/2012/12/profile_img.png',
+            'Mohsin T.',
+            '4',
+            Colors.green,
+          ),
+          _buildUserCard(
+            context,
+            'http://static2.businessinsider.com/image/5899ffcf6e09a897008b5c04-1200/.jpg',
+            'Naveed',
+            '3',
+            Colors.orange,
+          ),
+        ],
+      ),
+    );
+  }
+
+  _buildUserCard(BuildContext context, String imgUrl, String name,
+      String rating, Color ratingColor) {
+    return new Card(
+      child: new Column(
+        children: <Widget>[
+          new ListTile(
+            leading:
+                new CircleAvatar(backgroundImage: new NetworkImage(imgUrl)),
+            title: new Text(name),
+            subtitle: new Text(
+              'Rating ' + rating + '/5',
+              style: new TextStyle(
+                color: ratingColor,
+              ),
             ),
           ),
+          new ButtonBar(
+            children: <Widget>[
+              new RaisedButton(
+                onPressed: () {},
+                child: const Text(
+                  'Reject',
+                ),
+              ),
+              new RaisedButton(
+                onPressed: () {},
+                color: Theme.of(context).accentColor,
+                child: const Text(
+                  'Accept',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          )
         ],
       ),
     );

@@ -52,8 +52,22 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
+  _buildEmptyState() {
+    return new Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: new Center(
+        child: const Text(
+          'Good going! All your dues are paid.',
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
   Widget _buildList() {
-    return new ListView.builder(
+    return _notifications.length == 0 
+      ? _buildEmptyState() 
+      : new ListView.builder(
       itemCount: _notifications.length,
       itemBuilder: (BuildContext __, int index) {
         return _notifications[index];
@@ -151,7 +165,6 @@ class _BillNotificationCardState extends State<BillNotificationCard> {
               new ListTile(
                 onTap: () {
                   _initPayment(context, 'jc');
-                  Navigator.of(context).pop();
                 },
                 leading: new CircleAvatar(
                     backgroundColor: Colors.grey,
@@ -162,7 +175,6 @@ class _BillNotificationCardState extends State<BillNotificationCard> {
               new ListTile(
                 onTap: () {
                   _initPayment(context, 'ep');
-                  Navigator.of(context).pop();
                 },
                 leading: new CircleAvatar(
                     backgroundImage: new NetworkImage(

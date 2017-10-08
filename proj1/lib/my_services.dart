@@ -15,7 +15,7 @@ class _MyServicesPageState extends State<MyServicesPage> {
     _subscriptions.add(
       new SubscriptionCard(
         new Subscription(
-          'Hammad',
+          'Jerry Net',
           'Internet',
           'Monthly',
         ),
@@ -25,7 +25,7 @@ class _MyServicesPageState extends State<MyServicesPage> {
     _subscriptions.add(
       new SubscriptionCard(
         new Subscription(
-          'Asad',
+          'Aquafina Water Supply',
           'Water',
           'Monthly',
         ),
@@ -35,7 +35,7 @@ class _MyServicesPageState extends State<MyServicesPage> {
     _subscriptions.add(
       new SubscriptionCard(
         new Subscription(
-          'Shah',
+          'Nagori Milk',
           'Milk',
           'Monthly',
         ),
