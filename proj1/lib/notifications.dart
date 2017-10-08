@@ -111,32 +111,28 @@ class _BillNotificationCardState extends State<BillNotificationCard> {
             ),
           ),
         ),
-        new Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: new Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              new RaisedButton(
-                onPressed: () {},
-                child: const Text('Remind me'),
-              ),
-              _isBusy
-                  ? _buildLoader()
-                  : new RaisedButton(
-                      color: Theme.of(context).accentColor,
-                      onPressed: () {
-                        _showPaymentSelection(context);
-                      },
-                      child: const Text(
-                        'Pay now',
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
+        new ButtonBar(
+          children: <Widget>[
+            new RaisedButton(
+              onPressed: () {},
+              child: const Text('Remind me'),
+            ),
+            _isBusy
+                ? _buildLoader()
+                : new RaisedButton(
+                    color: Theme.of(context).accentColor,
+                    onPressed: () {
+                      _showPaymentSelection(context);
+                    },
+                    child: const Text(
+                      'Pay now',
+                      style: const TextStyle(
+                        color: Colors.white,
                       ),
                     ),
-            ],
-          ),
-        )
+                  ),
+          ],
+        ),
       ],
     );
   }
@@ -166,7 +162,7 @@ class _BillNotificationCardState extends State<BillNotificationCard> {
               new ListTile(
                 onTap: () {
                   _initPayment(context, 'ep');
-                  Navigator.of(context).pop();                  
+                  Navigator.of(context).pop();
                 },
                 leading: new CircleAvatar(
                     backgroundImage: new NetworkImage(
